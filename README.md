@@ -1,3 +1,3 @@
 # CS303E-Final-Project
 
-Program encrypts text files
+Program encrypts and decrypts text files
