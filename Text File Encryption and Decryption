@@ -1,0 +1,179 @@
+# Description of Program: program encrypts and decrypts text files 
+
+import random
+from os.path import exists
+
+# A global constant defining the alphabet. 
+LETTERS = "abcdefghijklmnopqrstuvwxyz"
+
+
+
+def isLegalKey( key ):
+    # A key is legal if it has length 26 and contains all letters.
+    # from LETTERS.
+    key = key.lower()
+    return ( len(key) == 26 and all( [ ch in key for ch in LETTERS ] ) )
+
+def makeRandomKey():
+    # A legal random key is a permutation of LETTERS.
+    lst = list( LETTERS )    # Turn string into list of letters
+    random.shuffle( lst )    # Shuffle the list randomly
+    return ''.join( lst )    # Assemble them back into a string
+
+def conversionDictionary(key1, key2):
+    d = {}
+
+    for i in range(len(key1)):
+        d[key1[i]] = key2[i]
+
+    return d
+
+def convertCharacter(ch, d):
+
+    values = list(d.values())
+    keys = list(d.keys())
+    index = values.index(ch.lower())
+
+    
+    return keys[index].upper() if (ch.isupper()) else keys[index].lower()
+
+    
+
+def convertText(text, d):
+    temp = text
+
+    if text.isalpha():
+        text = d[text.lower()]
+
+    return text.upper() if (temp.isupper()) else text.lower()
+
+
+
+
+class SubstitutionCipher:
+    def __init__ (self, key = makeRandomKey() ):
+        """Create an instance of the cipher with stored key, which
+        defaults to a randomly generated key."""
+        ...
+        # init
+        self.__key = key
+
+    def getKey( self ):
+        """Getter for the stored key."""
+        return self.__key
+
+    def setKey( self, newKey ):
+        """Setter for the stored key.  Check that it's a legal
+        key."""
+
+        newKey = newKey.lower()
+
+        while True:
+            if newKey == "random":
+                self.__key = makeRandomKey()
+                print(f"    New cipher key: {self.getKey()}")
+                return
+                
+            else:
+                
+                if isLegalKey(newKey):
+                    self.__key = newKey
+                    print(f"    New cipher key: {self.getKey()}")
+                    return
+                
+                elif newKey == "quit":
+                    return
+
+                else:
+                    print("    Illegal key entered. Try again!")
+                    newKey = input("  Enter a valid cipher key, 'random' for a random key, or 'quit' to quit: ")
+
+        
+
+    def encryptFile( self, inFile, outFile ):
+        """Encrypt the contents of inFile using the stored key
+        and write the results into outFile.  Assume inFile exists.
+        """
+        if not(exists(inFile)):
+            print("File does not exist")
+
+        else:
+            read = open(inFile, 'r')
+            output = open(outFile, 'w')
+
+            for i in read:
+                for j in i:
+                    output.write(convertText(j, conversionDictionary(LETTERS, self.getKey())))
+
+
+            print(f"The encrypted output filename is {outFile}")
+
+            read.close()
+            output.close()
+
+    def decryptFile( self, inFile, outFile ):
+        """Decrypt the contents of inFile using the stored key
+        and write the results into outFile.  Assume inFile exists. """
+        
+
+        if not(exists(inFile)):
+            print("File does not exist")
+
+        else:
+            
+            read = open(inFile, 'r')
+            output = open(outFile, 'w')
+
+            for i in read:
+                for j in i:
+                    if j.isalpha():
+                        j = convertCharacter(j, conversionDictionary(LETTERS, self.getKey()))
+
+                    output.write(j)
+
+            print(f"The decrypted output filename is {outFile}")
+
+            read.close()
+            output.close()
+                    
+
+def main():
+
+
+    # init object
+    cipher = SubstitutionCipher()
+
+    while True:
+
+        print()
+        command = input("Enter a command (getKey, changeKey, encryptFile, decryptFile, quit): ").lower()
+
+        if command == "quit":
+            print("Thanks for visiting!")
+            print()
+            return False
+
+        elif command == "getkey":
+            print(f"  Current cipher key: {cipher.getKey()}")
+        
+        elif command == "changekey":
+            newKey = input("  Enter a valid cipher key, 'random' for a random key, or 'quit' to quit: ")
+            cipher.setKey(newKey) 
+        
+        elif command == "encryptfile":
+            inFile = input("  Enter a filename: ")
+            outFile = inFile + '-Enc'
+
+            cipher.encryptFile(inFile, outFile)
+
+        elif command == "decryptfile":
+            inFile = input("  Enter a filename: ")
+            outFile = inFile + '-Dec'
+
+            cipher.decryptFile(inFile, outFile)
+
+        else:
+            print("  Command not recognized. Try again!")
+
+
+main()
